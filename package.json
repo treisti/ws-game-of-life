@@ -1,0 +1,25 @@
+{
+  "name": "ws-game-of-life",
+  "version": "0.0.1",
+  "description": "Collaborative John Conway's Game of Life with WebSocket !Collaborative John Conway's Game of Life with WebSocket !",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-ws": "^4.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/treisti/ws-game-of-life.git"
+  },
+  "author": "Tristan R. (treisti)",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/treisti/ws-game-of-life/issues"
+  },
+  "homepage": "https://github.com/treisti/ws-game-of-life#readme"
+}

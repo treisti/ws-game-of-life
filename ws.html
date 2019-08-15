@@ -1,0 +1,198 @@
+<style>
+	#board td {
+		width: 10px;
+		height: 10px;
+		padding: 0px;
+		margin: 0px;
+		border: 1px solid lightgrey;
+	}
+
+	#board {
+		border-spacing:0;
+  		border-collapse: collapse;
+  		margin-left:auto; 
+    	margin-right:auto;
+	}
+
+	td.alive {
+		background-color: black;
+	}
+
+	#mainPanel {
+		margin-bottom: 10px;
+		padding-bottom: 5px;
+		border-bottom: 1px solid grey;
+		text-align: center;
+	}
+
+	#mainPanel .space {
+		display: inline-block;
+		width: 10px;
+	}
+</style>
+
+<div id="mainPanel">
+	<button onclick="run(200)">Run</button>
+	<button onclick="run(100)">Run (x2)</button>
+	<button onclick="run(50)">Run (x4)</button>
+	<span class="space"></span>
+	<button onclick="stop()">Stop</button>
+	<button onclick="reset()">Reset</button>
+	<span class="space"></span>
+	State: <span id="state"></span>
+	<span class="space"></span>
+	Position: <span id="posX">0</span>, <span id="posY">0</span> (use arrow keys)
+	<span class="space"></span>
+	<button onclick="randomize()">Randomize (FOR TEST ONLY)</button>
+</div>
+<table id="board">
+</table>
+
+<script>
+	let board = document.getElementById('board');
+	let boardWidth = 70;
+	let boardHeight = 70;
+	let posX = 0;
+	let posY = 0;
+	let cells = [];
+
+	for(let y = 0; y < boardHeight; y++) {
+		let line = document.createElement('tr');
+		for(let x = 0; x < boardWidth; x++) {
+			let cell = document.createElement('td');
+			cell.onclick = function() {
+				placeCell(x + posX, y + posY);
+			}.bind(x, y);
+			cell.addEventListener('contextmenu', function() {
+			    event.preventDefault();
+			    removeCell(x + posX, y + posY);
+			    return false;
+			}.bind(x, y, event), false);
+			cells[x + y * boardWidth] = cell;
+			line.appendChild(cell);
+		}
+		board.appendChild(line);
+	}
+
+
+	function sendCoordinates() {
+		let data = {
+			"type": "coordinates",
+			"startX": posX,
+			"startY": posY,
+			"endX": boardWidth + posX,
+			"endY": boardHeight + posY
+		}
+		s.send(JSON.stringify(data));
+		document.getElementById('posX').innerHTML = posX;
+		document.getElementById('posY').innerHTML = posY;
+	}
+
+	function placeCell(x, y) {
+		let data = {
+			"type": "placeCell",
+			"x": x,
+			"y": y
+		}
+		s.send(JSON.stringify(data));
+	}
+
+	function removeCell(x, y) {
+		let data = {
+			"type": "removeCell",
+			"x": x,
+			"y": y
+		}
+		s.send(JSON.stringify(data));
+	}
+
+	function setCells(receivedCells) {
+		cells.forEach(function(cell) {
+			cell.classList.remove("alive");
+		});
+		receivedCells.forEach(function(receivedCell) {
+			cells[receivedCell.x - posX + (receivedCell.y - posY) * boardWidth].classList.add("alive");
+		});
+	}
+
+	function setState(isRunning) {
+		let state = "Stopped";
+		if(isRunning) {
+			state = "Running";
+		}
+		document.getElementById('state').innerHTML = state;
+	}
+
+	function run(ms) {
+		let data = {
+			"type": "run",
+			"intervalMilliseconds": ms
+		}
+		s.send(JSON.stringify(data));
+	}
+
+	function stop() {
+		let data = {
+			"type": "stop"
+		}
+		s.send(JSON.stringify(data));
+	}
+
+	function reset() {
+		let data = {
+			"type": "reset"
+		}
+		s.send(JSON.stringify(data));
+	}
+	
+	var s = new WebSocket('ws://'+window.location.host+'/');
+	s.addEventListener('error', function (m) { console.log("websocket connection error"); });
+	s.addEventListener('open', function (m) {
+		console.log("websocket connection open");
+		sendCoordinates();
+	});
+	s.addEventListener('message', function (m) {
+		let data = JSON.parse(m.data);
+
+		switch(data.type) {
+			case "cells":
+				setCells(data.cells);
+				break;
+			case "state":
+				setState(data.isRunning);
+				break;
+		}
+	});
+
+	document.addEventListener('keydown', (event) => {
+		switch(event.key) {
+			case 'ArrowLeft':
+				posX--;
+				sendCoordinates();
+		    	break;
+			case 'ArrowRight':
+				posX++;
+				sendCoordinates();
+		    	break;
+			case 'ArrowUp':
+				posY--;
+				sendCoordinates();
+		    	break;
+			case 'ArrowDown':
+				posY++;
+				sendCoordinates();
+		    	break;
+		  }
+	}, false);
+
+	function randomize() {
+		for(let y = 0; y < boardHeight; y++) {
+			for(let x = 0; x < boardWidth; x++) {
+				if(Math.floor(Math.random() * Math.floor(2)) == 0) {
+					placeCell(x + posX, y + posY);
+				}
+			}
+		}
+	}
+
+</script>
