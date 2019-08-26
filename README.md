@@ -27,9 +27,9 @@ Launch the server:
 $ node server.js
 ```
 
-Then go to ![http://localhost:3001/](http://localhost:3001/)
+Then go to [http://localhost:3001/](http://localhost:3001/)
 
 
 ### Dependencies
 
-You need ![Node.js](https://nodejs.org/en/) to run this project. The last version will probably work.
+You need [Node.js](https://nodejs.org/en/) to run this project. The last version will probably work.
